@@ -2,11 +2,15 @@ import XCTest
 @testable import SwiftRSS
 
 final class SwiftRSSTests: XCTestCase {
-    func testExample() throws {
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
-
-        // Defining Test Cases and Test Methods
-        // https://developer.apple.com/documentation/xctest/defining_test_cases_and_test_methods
+    func testParse() async throws {
+        let parser = RSSParser()
+        let url = URL(string: "https://developer.apple.com/news/rss/news.rss")!
+        
+        do {
+            let items = try await parser.parse(url: url)
+            XCTAssertGreaterThan(items.count, 0, "Parsed items should not be empty")
+        } catch {
+            XCTFail("Parsing failed with error: \(error)")
+        }
     }
 }
