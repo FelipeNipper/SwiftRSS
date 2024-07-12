@@ -20,7 +20,7 @@ public class RSSParser: NSObject, XMLParserDelegate {
     private var currentGuid: String = ""
     private var currentPubDate: String = ""
     private var currentSource: String = ""
-    private var currentImageURL: String = ""
+    private var currentImages: [RSSFeedImage] = []
     private var continuation: CheckedContinuation<[RSSFeedItem], Error>?
 
     public func parse(url: URL) async throws -> [RSSFeedItem] {
@@ -58,11 +58,21 @@ public class RSSParser: NSObject, XMLParserDelegate {
             currentGuid = ""
             currentPubDate = ""
             currentSource = ""
-            currentImageURL = ""
+            currentImages = []
         }
 
         if currentElement == "enclosure", let url = attributeDict["url"], let type = attributeDict["type"], type.hasPrefix("image") {
-            currentImageURL = url
+            currentEnclosure = url
+        }
+
+        if currentElement == "media:thumbnail" {
+            let url = attributeDict["url"] ?? ""
+            let width = Int(attributeDict["width"] ?? "")
+            let height = Int(attributeDict["height"] ?? "")
+            let credit = attributeDict["credit"]
+
+            let image = RSSFeedImage(url: url, width: width, height: height, credit: credit)
+            currentImages.append(image)
         }
     }
 
@@ -98,6 +108,7 @@ public class RSSParser: NSObject, XMLParserDelegate {
             let date = formatter.date(from: currentPubDate)
 
             let item = RSSFeedItem(
+                id: currentGuid.trimmingCharacters(in: .whitespacesAndNewlines),
                 title: currentTitle.trimmingCharacters(in: .whitespacesAndNewlines),
                 link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
                 description: currentDescription.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -108,7 +119,7 @@ public class RSSParser: NSObject, XMLParserDelegate {
                 guid: currentGuid.trimmingCharacters(in: .whitespacesAndNewlines),
                 pubDate: date,
                 source: currentSource.trimmingCharacters(in: .whitespacesAndNewlines),
-                imageURL: currentImageURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                images: currentImages
             )
             items.append(item)
         }
