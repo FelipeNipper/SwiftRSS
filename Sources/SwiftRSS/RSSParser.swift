@@ -13,7 +13,14 @@ public class RSSParser: NSObject, XMLParserDelegate {
     private var currentTitle: String = ""
     private var currentLink: String = ""
     private var currentDescription: String = ""
+    private var currentAuthor: String = ""
+    private var currentCategory: String = ""
+    private var currentComments: String = ""
+    private var currentEnclosure: String = ""
+    private var currentGuid: String = ""
     private var currentPubDate: String = ""
+    private var currentSource: String = ""
+    private var currentImageURL: String = ""
     private var continuation: CheckedContinuation<[RSSFeedItem], Error>?
 
     public func parse(url: URL) async throws -> [RSSFeedItem] {
@@ -44,7 +51,18 @@ public class RSSParser: NSObject, XMLParserDelegate {
             currentTitle = ""
             currentLink = ""
             currentDescription = ""
+            currentAuthor = ""
+            currentCategory = ""
+            currentComments = ""
+            currentEnclosure = ""
+            currentGuid = ""
             currentPubDate = ""
+            currentSource = ""
+            currentImageURL = ""
+        }
+
+        if currentElement == "enclosure", let url = attributeDict["url"], let type = attributeDict["type"], type.hasPrefix("image") {
+            currentImageURL = url
         }
     }
 
@@ -56,8 +74,18 @@ public class RSSParser: NSObject, XMLParserDelegate {
             currentLink += string
         case "description":
             currentDescription += string
+        case "author":
+            currentAuthor += string
+        case "category":
+            currentCategory += string
+        case "comments":
+            currentComments += string
+        case "guid":
+            currentGuid += string
         case "pubDate":
             currentPubDate += string
+        case "source":
+            currentSource += string
         default:
             break
         }
@@ -69,7 +97,19 @@ public class RSSParser: NSObject, XMLParserDelegate {
             formatter.dateFormat = "E, d MMM yyyy HH:mm:ss Z"
             let date = formatter.date(from: currentPubDate)
 
-            let item = RSSFeedItem(title: currentTitle, link: currentLink, description: currentDescription, pubDate: date)
+            let item = RSSFeedItem(
+                title: currentTitle.trimmingCharacters(in: .whitespacesAndNewlines),
+                link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
+                description: currentDescription.trimmingCharacters(in: .whitespacesAndNewlines),
+                author: currentAuthor.trimmingCharacters(in: .whitespacesAndNewlines),
+                category: currentCategory.trimmingCharacters(in: .whitespacesAndNewlines),
+                comments: currentComments.trimmingCharacters(in: .whitespacesAndNewlines),
+                enclosure: currentEnclosure.trimmingCharacters(in: .whitespacesAndNewlines),
+                guid: currentGuid.trimmingCharacters(in: .whitespacesAndNewlines),
+                pubDate: date,
+                source: currentSource.trimmingCharacters(in: .whitespacesAndNewlines),
+                imageURL: currentImageURL.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
             items.append(item)
         }
     }
