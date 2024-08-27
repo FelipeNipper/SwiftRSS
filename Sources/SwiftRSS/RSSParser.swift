@@ -66,10 +66,7 @@ public class RSSParser: NSObject, XMLParserDelegate {
         }
 
         if currentElement == "media:thumbnail" {
-            var url = attributeDict["url"] ?? ""
-            if url.hasSuffix("\\") {
-                url.removeLast()
-            }
+            let url = attributeDict["url"] ?? ""
             let width = Int(attributeDict["width"] ?? "")
             let height = Int(attributeDict["height"] ?? "")
             let credit = attributeDict["credit"]
