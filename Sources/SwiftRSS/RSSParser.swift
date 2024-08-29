@@ -69,9 +69,9 @@ public class RSSParser: NSObject, XMLParserDelegate {
             let url = attributeDict["url"] ?? ""
             let width = Int(attributeDict["width"] ?? "")
             let height = Int(attributeDict["height"] ?? "")
-            let credit = attributeDict["credit"]
+            //let credit = attributeDict["credit"]
 
-            let image = RSSFeedImage(url: url, width: width, height: height, credit: credit)
+            let image = RSSFeedImage(url: url, width: width, height: height, credit: nil)
             currentImages.append(image)
         }
     }
@@ -97,7 +97,7 @@ public class RSSParser: NSObject, XMLParserDelegate {
         case "source":
             currentSource += string
         case "image":
-            let image = RSSFeedImage(url: string, width: 0, height: 0, credit: "")
+            let image = RSSFeedImage(url: string, width: nil, height: nil, credit: nil)
             currentImages.append(image)
         default:
             break
