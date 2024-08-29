@@ -26,14 +26,29 @@ public class RSSParser: NSObject, XMLParserDelegate {
     public func parse(url: URL) async throws -> [RSSFeedItem] {
         return try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
-            
+
             let task = URLSession.shared.dataTask(with: url) { data, response, error in
                 guard let data = data else {
                     continuation.resume(throwing: error ?? URLError(.badServerResponse))
                     return
                 }
 
-                let parser = XMLParser(data: data)
+                // Convert data to string for preprocessing
+                guard var xmlString = String(data: data, encoding: .utf8) else {
+                    continuation.resume(throwing: URLError(.cannotParseResponse))
+                    return
+                }
+
+                // Preprocess XML to escape invalid characters
+                xmlString = xmlString.replacingOccurrences(of: "&(?!amp;|lt;|gt;|quot;|apos;)", with: "&amp;", options: .regularExpression)
+
+                // Convert back to data
+                guard let processedData = xmlString.data(using: .utf8) else {
+                    continuation.resume(throwing: URLError(.cannotParseResponse))
+                    return
+                }
+
+                let parser = XMLParser(data: processedData)
                 parser.delegate = self
                 parser.parse()
             }
@@ -133,6 +148,7 @@ public class RSSParser: NSObject, XMLParserDelegate {
     }
 
     public func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {
+        print("Parse error at line \(parser.lineNumber), column \(parser.columnNumber): \(parseError.localizedDescription)")
         continuation?.resume(throwing: parseError)
     }
 }
