@@ -96,6 +96,9 @@ public class RSSParser: NSObject, XMLParserDelegate {
             currentPubDate += string
         case "source":
             currentSource += string
+        case "image":
+            let image = RSSFeedImage(url: string, width: 0, height: 0, credit: "")
+            currentImages.append(image)
         default:
             break
         }
