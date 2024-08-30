@@ -18,7 +18,6 @@ public class RSSParser: NSObject, XMLParserDelegate {
     private var currentComments: String = ""
     private var currentEnclosure: String = ""
     private var currentGuid: String = ""
-    private var currentPubDate: String = ""
     private var currentSource: String = ""
     private var currentImages: [RSSFeedImage] = []
     private var continuation: CheckedContinuation<[RSSFeedItem], Error>?
@@ -71,7 +70,6 @@ public class RSSParser: NSObject, XMLParserDelegate {
             currentComments = ""
             currentEnclosure = ""
             currentGuid = ""
-            currentPubDate = ""
             currentSource = ""
             currentImages = []
         }
@@ -86,7 +84,7 @@ public class RSSParser: NSObject, XMLParserDelegate {
             let height = Int(attributeDict["height"] ?? "")
             //let credit = attributeDict["credit"]
 
-            let image = RSSFeedImage(url: url, width: width, height: height, credit: nil)
+            let image = RSSFeedImage(url: url, width: width, height: height)
             currentImages.append(image)
         }
     }
@@ -107,12 +105,10 @@ public class RSSParser: NSObject, XMLParserDelegate {
             currentComments += string
         case "guid":
             currentGuid += string
-        case "pubDate":
-            currentPubDate += string
         case "source":
             currentSource += string
         case "image":
-            let image = RSSFeedImage(url: string, width: nil, height: nil, credit: nil)
+            let image = RSSFeedImage(url: string, width: nil, height: nil)
             currentImages.append(image)
         default:
             break
@@ -121,9 +117,6 @@ public class RSSParser: NSObject, XMLParserDelegate {
 
     public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         if elementName == "item" {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "E, d MMM yyyy HH:mm:ss Z"
-            let date = formatter.date(from: currentPubDate)
 
             let item = RSSFeedItem(
                 id: currentGuid.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -135,7 +128,6 @@ public class RSSParser: NSObject, XMLParserDelegate {
                 comments: currentComments.trimmingCharacters(in: .whitespacesAndNewlines),
                 enclosure: currentEnclosure.trimmingCharacters(in: .whitespacesAndNewlines),
                 guid: currentGuid.trimmingCharacters(in: .whitespacesAndNewlines),
-                pubDate: date,
                 source: currentSource.trimmingCharacters(in: .whitespacesAndNewlines),
                 images: currentImages
             )

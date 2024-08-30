@@ -17,7 +17,6 @@ public struct RSSFeedItem: Identifiable {
     public let comments: String?
     public let enclosure: String?
     public let guid: String?
-    public let pubDate: Date?
     public let source: String?
     public let images: [RSSFeedImage]
     
@@ -27,5 +26,4 @@ public struct RSSFeedImage {
     public let url: String
     public let width: Int?
     public let height: Int?
-    public let credit: String?
 }
