@@ -25,6 +25,7 @@ public class RSSParser: NSObject, XMLParserDelegate {
     public func parse(url: URL) async throws -> [RSSFeedItem] {
         return try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
+            self.items = []
 
             let task = URLSession.shared.dataTask(with: url) { data, response, error in
                 guard let data = data else {
